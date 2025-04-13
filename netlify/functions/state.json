@@ -1,0 +1,20 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Johannesburg",
+			"country": {
+				"code": "ZA",
+				"name": "South Africa"
+			},
+			"subdivision": {
+				"code": "GP",
+				"name": "Gauteng"
+			},
+			"timezone": "Africa/Johannesburg",
+			"latitude": -26.2309,
+			"longitude": 28.0583,
+			"postalCode": "2000"
+		},
+		"timestamp": 1744133113261
+	}
+}

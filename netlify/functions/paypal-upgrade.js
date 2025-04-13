@@ -1,1 +1,1 @@
-// PayPal webhook placeholder
+// PayPal webhook logic for upgrades

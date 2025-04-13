@@ -1,1 +1,1 @@
-// Placeholder function
+// returns site branding & content JSON
