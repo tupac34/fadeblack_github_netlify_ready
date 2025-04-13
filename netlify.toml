@@ -3,6 +3,21 @@
   functions = "netlify/functions"
 
 [[redirects]]
+  from = "/site/*"
+  to = "/site-template.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/*"
+  to = "/site-dashboard.html"
+  status = 200
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
