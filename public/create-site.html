@@ -1,1 +1,55 @@
-<h1>Create Your Site</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your Store – FadeBlack</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body { background: #000; color: white; font-family: sans-serif; display: flex; justify-content: center; padding-top: 10vh; }
+    form { background: #111; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 500px; }
+    input, select, button { width: 100%; margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.5rem; border: none; }
+    button { background: white; color: black; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <form id="createSiteForm">
+    <h1 class="text-2xl mb-4">🚀 Create Your Store</h1>
+    <input type="text" id="storeName" placeholder="Store Name" required />
+    <input type="email" id="email" placeholder="Your Email" required />
+    <select id="plan">
+      <option value="free">Free Plan</option>
+      <option value="pro">Pro Plan (R299/month)</option>
+    </select>
+    <button type="submit">Launch Store</button>
+  </form>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8aUACMkdIDfBtcVZqAFDlyXmAFApVpZs",
+      authDomain: "fadeblack-c190e.firebaseapp.com",
+      projectId: "fadeblack-c190e",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById('createSiteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const store = document.getElementById('storeName').value.toLowerCase();
+      const email = document.getElementById('email').value;
+      const plan = document.getElementById('plan').value;
+
+      await addDoc(collection(db, "stores"), {
+        store, email, plan,
+        created: Date.now()
+      });
+
+      window.location.href = `/site/${store}`;
+    });
+  </script>
+</body>
+</html>
