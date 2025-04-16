@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplier Manager – FadeBlack</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body { background: #000; color: white; font-family: sans-serif; padding: 2rem; }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #111; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 0.75rem 1rem; border-bottom: 1px solid #222; }
+    input, button { padding: 0.5rem; margin-right: 0.5rem; border-radius: 5px; border: none; }
+    button { background: white; color: black; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>📦 Supplier Management</h1>
+
+  <form id="supplierForm">
+    <input type="text" id="supplierName" placeholder="Supplier Name" required />
+    <input type="url" id="supplierURL" placeholder="Supplier Website" required />
+    <button type="submit">Add Supplier</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Website</th></tr>
+    </thead>
+    <tbody id="supplierList"></tbody>
+  </table>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8aUACMkdIDfBtcVZqAFDlyXmAFApVpZs",
+      authDomain: "fadeblack-c190e.firebaseapp.com",
+      projectId: "fadeblack-c190e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const suppliersRef = collection(db, 'suppliers');
+
+    document.getElementById('supplierForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('supplierName').value;
+      const url = document.getElementById('supplierURL').value;
+
+      await addDoc(suppliersRef, { name, url, added: Date.now() });
+      location.reload();
+    });
+
+    const supplierList = document.getElementById('supplierList');
+    const snapshot = await getDocs(suppliersRef);
+    snapshot.forEach(doc => {
+      const { name, url } = doc.data();
+      const row = `<tr><td>${name}</td><td><a href="${url}" target="_blank" style="color:skyblue">${url}</a></td></tr>`;
+      supplierList.insertAdjacentHTML('beforeend', row);
+    });
+  </script>
+</body>
+</html>
