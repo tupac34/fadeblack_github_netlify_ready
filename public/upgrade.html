@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upgrade to Pro – FadeBlack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="/styles.css" rel="stylesheet" />
+  <style>
+    body { background: #000; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .card { background: #111; padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px; width: 100%; }
+    .btn { background: white; color: black; padding: 0.5rem 1rem; margin-top: 0.5rem; display: inline-block; border-radius: 0.25rem; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 class="text-2xl mb-4">Unlock Pro Features</h1>
+    <p class="mb-4">Upgrade to a Pro account for R299/month and get:</p>
+    <ul style="text-align: left; margin-bottom: 1rem;">
+      <li>✅ Printful order automation</li>
+      <li>✅ Premium mockups & designs</li>
+      <li>✅ Custom branding & domain</li>
+    </ul>
+
+    <div id="paypal-button-container"></div>
+  </div>
+
+  <script src="https://www.paypal.com/sdk/js?Ab-EZAvGmQpB-xs6MsQGE-ki0zSCkeWFJvH4aCvL20-y6GPeg9AVZ27QD1DJB5yHE8GjdBn3f7RqwDTM"></script>
+  <script>
+    paypal.Buttons({
+      createOrder: (data, actions) => {
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: '29.99' },
+            description: 'FadeBlack Premium Store Upgrade'
+          }]
+        });
+      },
+      onApprove: async (data, actions) => {
+        const details = await actions.order.capture();
+        alert('✅ Payment completed!');
+
+        await fetch('/.netlify/functions/paypal-upgrade', {
+          method: 'POST',
+          body: JSON.stringify({ order: details })
+        });
+
+        window.location.href = "/dashboard.html";
+      }
+    }).render('#paypal-button-container');
+  </script>
+</body>
+</html>
