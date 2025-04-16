@@ -10,56 +10,90 @@
     h1 { font-size: 2rem; margin-bottom: 1rem; }
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #111; border-radius: 8px; overflow: hidden; }
     th, td { padding: 0.75rem 1rem; border-bottom: 1px solid #222; }
-    input, button { padding: 0.5rem; margin-right: 0.5rem; border-radius: 5px; border: none; }
-    button { background: white; color: black; font-weight: bold; }
+    input, button, label { padding: 0.5rem; margin-bottom: 1rem; border-radius: 5px; border: none; display: block; width: 100%; }
+    button { background: white; color: black; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>📦 Supplier Management</h1>
+  <h1>📦 Supplier Portal</h1>
 
-  <form id="supplierForm">
+  <form id="authForm">
+    <input type="email" id="supplierEmail" placeholder="Enter your supplier email to log in" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <form id="supplierForm" style="display:none">
     <input type="text" id="supplierName" placeholder="Supplier Name" required />
     <input type="url" id="supplierURL" placeholder="Supplier Website" required />
+    <label>Upload Catalog (PDF or Image):</label>
+    <input type="file" id="catalogFile" accept=".pdf,image/*" />
     <button type="submit">Add Supplier</button>
   </form>
 
   <table>
-    <thead>
-      <tr><th>Name</th><th>Website</th></tr>
-    </thead>
+    <thead><tr><th>Name</th><th>Website</th><th>Catalog</th></tr></thead>
     <tbody id="supplierList"></tbody>
   </table>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyD8aUACMkdIDfBtcVZqAFDlyXmAFApVpZs",
       authDomain: "fadeblack-c190e.firebaseapp.com",
-      projectId: "fadeblack-c190e"
+      projectId: "fadeblack-c190e",
+      storageBucket: "fadeblack-c190e.appspot.com"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
     const suppliersRef = collection(db, 'suppliers');
 
-    document.getElementById('supplierForm').addEventListener('submit', async (e) => {
+    const authForm = document.getElementById('authForm');
+    const supplierForm = document.getElementById('supplierForm');
+    let supplierEmail = "";
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      supplierEmail = document.getElementById('supplierEmail').value;
+      authForm.style.display = 'none';
+      supplierForm.style.display = 'block';
+    });
+
+    supplierForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('supplierName').value;
       const url = document.getElementById('supplierURL').value;
+      const file = document.getElementById('catalogFile').files[0];
 
-      await addDoc(suppliersRef, { name, url, added: Date.now() });
+      let catalogURL = "";
+      if (file) {
+        const fileRef = ref(storage, `catalogs/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        catalogURL = await getDownloadURL(fileRef);
+      }
+
+      await addDoc(suppliersRef, { name, url, email: supplierEmail, catalog: catalogURL, added: Date.now() });
+
+      await fetch('/.netlify/functions/email-notify', {
+        method: 'POST',
+        body: JSON.stringify({ type: 'supplier-added', name, email: supplierEmail })
+      });
+
       location.reload();
     });
 
     const supplierList = document.getElementById('supplierList');
     const snapshot = await getDocs(suppliersRef);
     snapshot.forEach(doc => {
-      const { name, url } = doc.data();
-      const row = `<tr><td>${name}</td><td><a href="${url}" target="_blank" style="color:skyblue">${url}</a></td></tr>`;
+      const { name, url, catalog } = doc.data();
+      const row = `<tr><td>${name}</td><td><a href="${url}" target="_blank" style="color:skyblue">${url}</a></td><td>${catalog ? `<a href='${catalog}' target='_blank'>📎 View</a>` : '—'}</td></tr>`;
       supplierList.insertAdjacentHTML('beforeend', row);
     });
   </script>
 </body>
 </html>
+
