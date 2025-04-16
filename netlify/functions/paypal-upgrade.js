@@ -1,8 +1,15 @@
 const admin = require("firebase-admin");
 let initialized = false;
+
 function initFirebase() {
   if (!initialized) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_JSON);
+    let serviceAccount;
+    if (process.env.FIREBASE_SERVICE_JSON) {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_JSON);
+    } else {
+      serviceAccount = require("./service-account.json");
+    }
+
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
@@ -22,13 +29,7 @@ exports.handler = async (event) => {
       name: order.payer.name.given_name,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
-    let serviceAccount;
-    if (process.env.FIREBASE_SERVICE_JSON) {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_JSON);
-    } else {
-      serviceAccount = require("./service-account.json");
-    }
-    
+
     return {
       statusCode: 200,
       body: JSON.stringify({ message: "✅ Upgrade stored successfully" }),
@@ -36,7 +37,7 @@ exports.handler = async (event) => {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: err.message })
     };
   }
 };
