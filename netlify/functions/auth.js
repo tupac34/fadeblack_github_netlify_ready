@@ -33,12 +33,24 @@ if (!admin.apps.length) {
   });
 }
 
-const db = admin.firestore();
+const admin = require("firebase-admin");
 
-exports.handler = async function (event, context) {
+let initialized = false;
+function initFirebase() {
+  if (!initialized) {
+    const serviceAccount = require("./service-account.json");
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    initialized = true;
+  }
+}
+
+exports.handler = async function (event) {
   try {
-    const body = JSON.parse(event.body);
-    const { email, action } = body;
+    initFirebase();
+
+    const { email, action } = JSON.parse(event.body);
 
     if (!email || !action) {
       return {
@@ -47,15 +59,12 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // 🔥 Log to Firestore
+    const db = admin.firestore();
     await db.collection("activity").add({
       email,
       action,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
-
-    // 📩 (Optional) Add nodemailer/email logic here if needed
-
     return {
       statusCode: 200,
       body: JSON.stringify({ message: `✅ ${action} logged for ${email}` })
