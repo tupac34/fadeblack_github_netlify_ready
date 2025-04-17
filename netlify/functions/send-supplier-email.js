@@ -1,6 +1,25 @@
 const nodemailer = require("nodemailer");
+const admin = require("firebase-admin");
+let initialized = false;
+
+function initFirebase() {
+  if (!initialized) {
+    let serviceAccount;
+    if (process.env.FIREBASE_SERVICE_JSON) {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_JSON);
+    } else {
+      serviceAccount = require("./service-account.json");
+    }
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    initialized = true;
+  }
+}
 
 exports.handler = async function(event) {
+  initFirebase();
   const { name, url, catalogURL } = JSON.parse(event.body);
 
   const transporter = nodemailer.createTransport({
