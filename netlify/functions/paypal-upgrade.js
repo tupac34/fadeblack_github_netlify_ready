@@ -7,9 +7,9 @@ function initFirebase() {
     if (process.env.FIREBASE_SERVICE_JSON) {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_JSON);
     } else {
-      serviceAccount = require("./service-account.json");
+      serviceAccount = require("./service-account.json"); // local dev only
     }
-
+    
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
