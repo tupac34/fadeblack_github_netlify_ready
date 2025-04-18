@@ -1,5 +1,5 @@
- [build]
-  command = "node_modules/.bin/gatsby build"
+[build]
+  command = "gatsby build"
   publish = "public"
   functions = "netlify/functions"
 
